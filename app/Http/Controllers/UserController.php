@@ -30,7 +30,7 @@ class UserController extends Controller
         $imageName = $image->getClientOriginalName();
         $imagePath = $image->storeAs('/images/users/' . $user->id, $imageName, 'public');
 
-        $data['image_url'] = $imagePath;
+        $data['image_url'] = 'storage/' . $imagePath;
 
         if (!empty($data)) {
             $success = $user->update($data);

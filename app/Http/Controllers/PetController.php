@@ -35,7 +35,7 @@ class PetController extends Controller
 
         $imagePath = $image->storeAs('public/images/pets/' . $pet->id, $imageName, 'public');
 
-        $pet->update(['images' => $imagePath]);
+        $pet->update(['images' => 'storage/' . $imagePath]);
 
         if (!$pet) {
             return response()->json(['status' => false]);
