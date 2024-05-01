@@ -25,7 +25,17 @@ class PetController extends Controller
     {
         $data = $request->validated();
 
+        $image = $request->file('image');
+        $imageName = $image->getClientOriginalName();
+
+        unset($data['image']);
+
+        /** @var Pet $pet */
         $pet = Pet::create($data);
+
+        $imagePath = $image->storeAs('public/images/pets/' . $pet->id, $imageName, 'public');
+
+        $pet->update(['images' => $imagePath]);
 
         if (!$pet) {
             return response()->json(['status' => false]);

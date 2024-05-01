@@ -26,6 +26,12 @@ class UserController extends Controller
         $data = $request->validated();
         $success = false;
 
+        $image = $request->file('image');
+        $imageName = $image->getClientOriginalName();
+        $imagePath = $image->storeAs('public/images/users/' . $user->id, $imageName, 'public');
+
+        $data['image'] = $imagePath;
+
         if (!empty($data)) {
             $success = $user->update($data);
         }

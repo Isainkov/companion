@@ -30,6 +30,7 @@ class StorePetRequest extends FormRequest
             'breed_type' => 'numeric|exists:App\Models\Breed,id',
             'gender' => 'string',
             'documents' => 'string|max:255',
+            'image' => 'file',
         ];
     }
 }

@@ -24,7 +24,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'string|max:255',
             'email' => 'string|email|max:255',
-            'image_url' => 'string|max:255',
+            'image_url' => 'file',
             'rating' => 'float|between:0,5',
             'amount_of_reviews' => 'integer',
             'country' => 'string|max:255',
