@@ -38,7 +38,7 @@ class PetController extends Controller
             unset($data['image']);
         }
 
-        if ($data['breed_type']) {
+        if (!empty($data['breed_type'])) {
             $breedTypeIds = $data['breed_type'];
             unset($data['breed_type']);
         }
@@ -91,7 +91,7 @@ class PetController extends Controller
             return response()->json(['success' => false, 'message' => 'Provided params are invalid']);
         }
 
-        if ($data['breed_type']) {
+        if (!empty($data['breed_type'])) {
             $breedTypeIds = $data['breed_type'];
             unset($data['breed_type']);
             $pet->breeds()->sync($breedTypeIds);
