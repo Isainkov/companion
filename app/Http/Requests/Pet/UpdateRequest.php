@@ -19,7 +19,7 @@ class UpdateRequest extends AbstractRequest
             'price' => 'numeric',
             'age' => 'numeric',
             'pet_type' => 'numeric|exists:App\Models\Pet,id',
-            'breed_type' => 'numeric|exists:App\Models\Breed,id',
+            'breed_type.*' => 'numeric|exists:App\Models\BreedType,id',
             'gender' => 'string',
             'documents' => 'string|max:255',
             'image.*' => 'file|mimes:jpg,jpeg,png,svg',

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BreedType extends Model
 {
@@ -15,10 +15,15 @@ class BreedType extends Model
     ];
 
     /**
-     * @return HasMany
+     * @return BelongsToMany
      */
-    public function pet(): HasMany
+    public function pets(): BelongsToMany
     {
-        return $this->hasMany(Pet::class, 'breed_type');
+        return $this->belongsToMany(
+            Pet::class,
+            'breed_type_pet',
+            'breed_type_id',
+            'pet_id'
+        );
     }
 }

@@ -34,12 +34,21 @@ class PetController extends Controller
     {
         $data = $request->validated();
 
-        if ($data['image']) {
+        if ($request->hasFile('image')) {
             unset($data['image']);
+        }
+
+        if ($data['breed_type']) {
+            $breedTypeIds = $data['breed_type'];
+            unset($data['breed_type']);
         }
 
         /** @var Pet $pet */
         $pet = Pet::create($data);
+
+        if (!empty($breedTypeIds)) {
+            $pet->breeds()->sync($breedTypeIds);
+        }
 
         if (!$pet) {
             return $this->errorResponse('Something went wrong. Unable to store the provided pet. See logs.');
@@ -62,11 +71,11 @@ class PetController extends Controller
 
     /**
      * @param Pet $pet
-     * @return Pet
+     * @return PetResource
      */
-    public function show(Pet $pet): Pet
+    public function show(Pet $pet): PetResource
     {
-        return $pet;
+        return new PetResource($pet);
     }
 
     /**
@@ -80,6 +89,12 @@ class PetController extends Controller
 
         if (!$data) {
             return response()->json(['success' => false, 'message' => 'Provided params are invalid']);
+        }
+
+        if ($data['breed_type']) {
+            $breedTypeIds = $data['breed_type'];
+            unset($data['breed_type']);
+            $pet->breeds()->sync($breedTypeIds);
         }
 
         if ($request->hasFile('image')) {

@@ -19,7 +19,7 @@ class PetResource extends JsonResource
             'price' => $this->price,
             'age' => $this->age,
             'pet_type' => $this->type?->name,
-            'breed_type' => $this->breed?->name,
+            'breed_types' => $this->has('breeds') ? $this->breeds->pluck('name') : null,
             'gender' => $this->gender,
             'documents' => $this->documents,
             'user_id' => $this->user_id,
