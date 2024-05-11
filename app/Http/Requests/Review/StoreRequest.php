@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Pet;
+namespace App\Http\Requests\Review;
 
 use App\Http\Requests\AbstractRequest;
 
-class ListByIdsRequest extends AbstractRequest
+class StoreRequest extends AbstractRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,7 +14,10 @@ class ListByIdsRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'ids' => 'required|array',
+            'receiver_profile_id' => 'required|exists:users,id',
+            'sender_profile_id' => 'required|exists:users,id',
+            'rating' => 'required|numeric|between:0,5',
+            'comment' => 'string',
         ];
     }
 }

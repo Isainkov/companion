@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LogoutRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticationController extends Controller
 {
     /**
      * @param LoginRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function authenticate(LoginRequest $request): \Illuminate\Http\JsonResponse
+    public function authenticate(LoginRequest $request): JsonResponse
     {
         try {
             $request->authenticate();
@@ -28,19 +30,18 @@ class AuthenticationController extends Controller
                 'access_token' => $accessToken,
                 'user_id' => $user->id
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $response = response()->json(['status' => false, 'message' => $e->getMessage()], 400);
+        } catch (ValidationException $e) {
+            $response = response()->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
 
         return $response;
     }
 
     /**
-     * @param Request $request
      * @param User $user
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function logout(Request $request, User $user): \Illuminate\Http\JsonResponse
+    public function logout(User $user): JsonResponse
     {
         $user->tokens()->where('name', 'api-auth')->delete();
 

@@ -2,18 +2,10 @@
 
 namespace App\Http\Requests\Pet;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\AbstractRequest;
 
-class StorePetRequest extends FormRequest
+class StoreRequest extends AbstractRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -26,11 +18,12 @@ class StorePetRequest extends FormRequest
             'description' => 'string|max:255',
             'price' => 'numeric',
             'age' => 'required|numeric',
-            'animal_type' => 'required|numeric|exists:App\Models\Pet,id',
+            'pet_type' => 'required|numeric|exists:App\Models\Pet,id',
             'breed_type' => 'numeric|exists:App\Models\Breed,id',
             'gender' => 'string',
             'documents' => 'string|max:255',
-            'image' => 'file',
+            'image.*' => 'file|mimes:jpg,jpeg,png,svg',
+            'user_id' => 'required|numeric|exists:App\Models\User,id',
         ];
     }
 }

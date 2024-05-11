@@ -2,40 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Requests\User\UpdateRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use function PHPUnit\Framework\throwException;
+use App\Services\StoreImagesService;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->only('update');
+    }
+
     /**
-     * Display the specified resource.
+     * @param User $user
+     * @return User
      */
-    public function show(Request $request, User $user)
+    public function show(User $user): User
     {
         return $user;
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param UpdateRequest $request
+     * @param User $user
+     * @param StoreImagesService $storeImages
+     * @return JsonResponse
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateRequest $request, User $user, StoreImagesService $storeImages): JsonResponse
     {
         $data = $request->validated();
-        $success = false;
 
-        $image = $request->file('image');
-        $imageName = $image->getClientOriginalName();
-        $imagePath = $image->storeAs('/images/users/' . $user->id, $imageName, 'public');
-
-        $data['image_url'] = 'storage/' . $imagePath;
-
-        if (!empty($data)) {
-            $success = $user->update($data);
+        if (!$data) {
+            return response()->json(['success' => false, 'message' => 'Provided params are invalid']);
         }
 
-        return response()->json(['success' => $success]);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $data['image_url'] = $storeImages->save($image, User::ENTITY_NAME, $user->id);
+        }
+
+        $status = $user->update($data);
+
+        return response()->json(['success' => $status, 'data' => $user->fresh()]);
     }
 }

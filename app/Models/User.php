@@ -13,6 +13,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    const ENTITY_NAME = 'user';
+
     /**
      * The attributes that are mass assignable.
      *

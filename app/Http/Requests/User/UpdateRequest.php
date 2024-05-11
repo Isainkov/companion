@@ -2,18 +2,10 @@
 
 namespace App\Http\Requests\User;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\AbstractRequest;
 
-class UpdateUserRequest extends FormRequest
+class UpdateRequest extends AbstractRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +16,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'string|max:255',
             'email' => 'string|email|max:255',
-            'image_url' => 'file',
+            'image' => 'file|mimes:jpg,jpeg,png,svg',
             'rating' => 'float|between:0,5',
             'amount_of_reviews' => 'integer',
             'country' => 'string|max:255',

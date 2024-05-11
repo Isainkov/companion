@@ -10,6 +10,8 @@ class Pet extends Model
 {
     use HasFactory;
 
+    const ENTITY_NAME = 'pet';
+
     /**
      * @var string[]
      */
@@ -18,7 +20,7 @@ class Pet extends Model
         'description',
         'price',
         'age',
-        'animal_type',
+        'pet_type',
         'breed_type',
         'gender',
         'documents',
@@ -38,5 +40,13 @@ class Pet extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(PetType::class, 'pet_type');
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function breed(): BelongsTo
+    {
+        return $this->belongsTo(BreedType::class, 'breed_type');
     }
 }

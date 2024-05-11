@@ -23,13 +23,11 @@ Route::post('/authenticate', [AuthenticationController::class, 'authenticate']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::post('/logout/user/{user}', [AuthenticationController::class, 'logout']);
-    Route::resource('users', UserController::class)->except('show', 'index', 'store', 'destroy');
-    Route::resource('pets', PetController::class)->except('show', 'index');
-    Route::put('/reviews/{user}', [ReviewController::class, 'storeReviewByUserId']);
 });
 
-Route::get('/users/{user}', [UserController::class, 'show']);
-Route::get('/pet/listByIds', [PetController::class, 'getListByIds']);
+Route::get('/pets/listByIds', [PetController::class, 'getListByIds']);
 Route::get('/reviews/{user}', [ReviewController::class, 'getReviewsByUserId']);
-Route::get('/pet/list', [PetController::class, 'index']);
-Route::get('/pet/{pet}', [PetController::class, 'show']);
+
+Route::resource('reviews', ReviewController::class)->only(['store']);
+Route::resource('users', UserController::class)->only(['show', 'update']);
+Route::resource('pets', PetController::class);

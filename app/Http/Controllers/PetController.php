@@ -3,86 +3,157 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Pet\ListByIdsRequest;
-use App\Http\Requests\Pet\StorePetRequest;
-use App\Http\Requests\Pet\UpdatePetRequest;
+use App\Http\Requests\Pet\StoreRequest;
+use App\Http\Requests\Pet\UpdateRequest;
+use App\Http\Resources\PetResource;
 use App\Models\Pet;
+use App\Services\StoreImagesService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\UploadedFile;
 
 class PetController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        return Pet::all();
+    public function __construct() {
+        $this->middleware('auth:sanctum')->except(['show', 'index', 'getListByIds']);
     }
 
     /**
-     * @param StorePetRequest $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function store(StorePetRequest $request)
+    public function index(): AnonymousResourceCollection
+    {
+        return PetResource::collection(Pet::all());
+    }
+
+    /**
+     * @param StoreRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        $image = $request->file('image');
-        $imageName = $image->getClientOriginalName();
-
-        unset($data['image']);
+        if ($data['image']) {
+            unset($data['image']);
+        }
 
         /** @var Pet $pet */
         $pet = Pet::create($data);
 
-        $imagePath = $image->storeAs('public/images/pets/' . $pet->id, $imageName, 'public');
-
-        $pet->update(['images' => 'storage/' . $imagePath]);
-
         if (!$pet) {
-            return response()->json(['status' => false]);
+            return $this->errorResponse('Something went wrong. Unable to store the provided pet. See logs.');
         }
 
-        return response()->json(['status' => true, 'data' => $pet]);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $isImagesStored = $this->storeImagesHandler($image, $pet);
+
+            if (!$isImagesStored) {
+                return $this->errorResponse(
+                    'Something went wrong. The pet was saved, but unable to store the provided image. See logs.',
+                    $pet
+                );
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => new PetResource($pet)]);
     }
 
     /**
-     * Display the specified resource.
+     * @param Pet $pet
+     * @return Pet
      */
-    public function show(Pet $pet)
+    public function show(Pet $pet): Pet
     {
         return $pet;
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param UpdateRequest $request
+     * @param Pet $pet
+     * @return JsonResponse
      */
-    public function update(UpdatePetRequest $request, Pet $pet)
+    public function update(UpdateRequest $request, Pet $pet): JsonResponse
     {
         $data = $request->validated();
 
+        if (!$data) {
+            return response()->json(['success' => false, 'message' => 'Provided params are invalid']);
+        }
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $isImagesStored = $this->storeImagesHandler($image, $pet);
+
+            if (!$isImagesStored) {
+                return $this->errorResponse(
+                    'Something went wrong. The pet was saved, but unable to store the provided image. See logs.',
+                    $pet
+                );
+            }
+        }
+
         $status = $pet->update($data);
 
-        return response()->json(['status' => $status]);
+        return response()->json(['success' => $status, 'data' => new PetResource($pet->fresh())]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @param Pet $pet
+     * @return JsonResponse
      */
-    public function destroy(Pet $pet)
+    public function destroy(Pet $pet): JsonResponse
     {
         $status = $pet->delete();
 
-        return response()->json(['status' => $status]);
+        return response()->json(['success' => $status]);
     }
 
     /**
      * @param ListByIdsRequest $request
-     * @return mixed
+     * @return JsonResponse
      */
-    public function getListByIds(ListByIdsRequest $request)
+    public function getListByIds(ListByIdsRequest $request): JsonResponse
     {
         $ids = $request->input('ids');
         $pets = Pet::whereIn('id', $ids)->get();
 
-        return response()->json($pets);
+        return response()->json(PetResource::collection($pets));
+    }
+
+    /**
+     * @param string $message
+     * @param mixed $data
+     * @return JsonResponse
+     */
+    private function errorResponse(string $message, mixed $data = []): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * @param UploadedFile|UploadedFile[] $image
+     * @param Pet $pet
+     * @return bool
+     */
+    private function storeImagesHandler(UploadedFile|array $image, Pet $pet): bool
+    {
+        $storeImagesService = new StoreImagesService();
+
+        $imagePath = is_array($image)
+            ? $storeImagesService->massSave($image, Pet::ENTITY_NAME, $pet->id)
+            : $storeImagesService->save($image, Pet::ENTITY_NAME, $pet->id);
+
+        if ($imagePath) {
+            $pet->images = implode(',', $imagePath);
+            $success = $pet->save();
+        }
+
+        return $success ?? false;
     }
 }

@@ -2,31 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Review\StoreRequest;
 use App\Models\Review;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ReviewController extends Controller
 {
-    public function getReviewsByUserId(Request $request, User $user)
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->only(['store']);
+    }
+
+    /**
+     * @param User $user
+     * @return JsonResponse
+     */
+    public function getReviewsByUserId(User $user): JsonResponse
     {
         $userReviews = $user->reviews;
 
         return response()->json($userReviews);
     }
 
-    public function storeReviewByUserId(Request $request, User $user)
+    /**
+     * @param StoreRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'sender_profile_id' => 'required|exists:users,id',
-            'rating' => 'required|float|between:0,5',
-            'comment' => 'string',
-        ]);
-
-        $data['receiver_profile_id'] = $user->id;
+        $data = $request->validated();
 
         $review = Review::create($data);
 
-        return response()->json(['status' => 'success', 'review' => $review]);
+        return response()->json(['success' => true, 'review' => $review]);
     }
 }

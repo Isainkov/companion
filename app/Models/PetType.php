@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PetType extends Model
 {
@@ -15,10 +15,10 @@ class PetType extends Model
     ];
 
     /**
-     * @return HasOne
+     * @return HasMany
      */
-    public function type(): HasOne
+    public function pet(): HasMany
     {
-        return $this->hasOne(Pet::class, 'pet_type');
+        return $this->hasMany(Pet::class, 'pet_type');
     }
 }

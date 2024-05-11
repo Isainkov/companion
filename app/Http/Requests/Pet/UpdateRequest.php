@@ -2,18 +2,10 @@
 
 namespace App\Http\Requests\Pet;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\AbstractRequest;
 
-class UpdatePetRequest extends FormRequest
+class UpdateRequest extends AbstractRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -26,10 +18,12 @@ class UpdatePetRequest extends FormRequest
             'description' => 'string|max:255',
             'price' => 'numeric',
             'age' => 'numeric',
-            'animal_type' => 'numeric|exists:App\Models\Pet,id',
+            'pet_type' => 'numeric|exists:App\Models\Pet,id',
             'breed_type' => 'numeric|exists:App\Models\Breed,id',
             'gender' => 'string',
             'documents' => 'string|max:255',
+            'image.*' => 'file|mimes:jpg,jpeg,png,svg',
+            'user_id' => 'numeric|exists:App\Models\User,id',
         ];
     }
 }
